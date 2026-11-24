@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Overview | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Security Command Center</p>
+      <h1>Executive Overview</h1>
+      <p class="page-subtitle">A consolidated view of API exposure, assessment outcomes, and emerging threats across your organization.</p>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-outline-gold" href="/reports/generate/">Generate report</a>
+      <a class="btn btn-gold" href="/scans/start/">Initiate scan</a>
+    </div>
+  </section>
+
+  {% firstof metrics.endpoint_count stats.endpoint_count '128' as metric_endpoints %}
+  {% firstof metrics.findings_count stats.findings_count '70' as metric_findings %}
+  {% firstof metrics.critical_count stats.critical_count '4' as metric_critical %}
+  {% firstof metrics.posture_score stats.posture_score '82/100' as metric_posture %}
+  {% firstof recent_findings findings '' as dashboard_findings %}
+  <div class="grid grid-stats">
+    {% include "components/stat_card.html" with label='Monitored Endpoints' value=metric_endpoints delta='+12%' trend='up' note='Across active projects' tone='blue' %}
+    {% include "components/stat_card.html" with label='Open Findings' value=metric_findings delta='+8.4%' trend='down' note='Awaiting remediation' tone='gold' %}
+    {% include "components/stat_card.html" with label='Critical Exposure' value=metric_critical delta='-2 this week' trend='up' note='Requires immediate review' tone='danger' %}
+    {% include "components/stat_card.html" with label='Security Posture' value=metric_posture delta='+6 pts' trend='up' note='Composite health index' tone='success' %}
+  </div>
+
+  <div class="grid grid-charts">
+    <section class="panel" data-reveal>
+      <div class="panel-head">
+        <div>
+          <h3>Finding Severity</h3>
+          <p>Distribution of validated security issues</p>
+        </div>
+        <a class="btn-link" href="/findings/">Analyze</a>
+      </div>
+      <div class="chart-frame">
+        <canvas id="severity-chart" aria-label="Findings by severity"></canvas>
+        <div class="chart-center" id="severity-center"><strong>0</strong><span>Total findings</span></div>
+        <div class="chart-fallback"></div>
+      </div>
+      <div class="chart-legend">
+        <span class="legend-item"><i class="legend-swatch" style="background:#ff5d70;color:#ff5d70"></i>Critical</span>
+        <span class="legend-item"><i class="legend-swatch" style="background:#ff9b4a;color:#ff9b4a"></i>High</span>
+        <span class="legend-item"><i class="legend-swatch" style="background:#f0c751;color:#f0c751"></i>Medium</span>
+        <span class="legend-item"><i class="legend-swatch" style="background:#55b8ff;color:#55b8ff"></i>Low</span>
+        <span class="legend-item"><i class="legend-swatch" style="background:#8ea6c8;color:#8ea6c8"></i>Info</span>
+      </div>
+    </section>
+
+    <section class="panel" data-reveal>
+      <div class="panel-head">
+        <div>
+          <h3>Threat Discovery Trend</h3>
+          <p>Detected findings across the last seven reporting periods</p>
+        </div>
+        <span class="badge badge-gold">Live telemetry</span>
+      </div>
+      <div class="chart-frame">
+        <canvas id="trend-chart" aria-label="Finding discovery trend"></canvas>
+        <div class="chart-fallback"></div>
+      </div>
+    </section>
+  </div>
+
+  {% include "components/network_visual.html" %}
+
+  <div class="grid grid-page">
+    {% include "components/finding_table.html" with findings=dashboard_findings heading='Priority Findings' subheading='Highest risk issues requiring attention' view_all_url='/findings/' %}
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head">
+          <div>
+            <h3>Posture Health</h3>
+            <p>Weighted controls assessment</p>
+          </div>
+          <span class="badge badge-low">Stable</span>
+        </div>
+        <div class="panel-body">
+          <div class="health-meter">
+            <div class="health-meter-head"><span>Authentication controls</span><strong>91%</strong></div>
+            <div class="health-meter-track"><span style="width:91%"></span></div>
+          </div>
+          <div class="health-meter">
+            <div class="health-meter-head"><span>Schema enforcement</span><strong>78%</strong></div>
+            <div class="health-meter-track"><span style="width:78%"></span></div>
+          </div>
+          <div class="health-meter">
+            <div class="health-meter-head"><span>Transport hardening</span><strong>86%</strong></div>
+            <div class="health-meter-track"><span style="width:86%"></span></div>
+          </div>
+          <div class="health-meter">
+            <div class="health-meter-head"><span>Exposure management</span><strong>64%</strong></div>
+            <div class="health-meter-track"><span style="width:64%"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head">
+          <div>
+            <h3>Activity Ledger</h3>
+            <p>Recent platform events</p>
+          </div>
+        </div>
+        <div class="panel-body">
+          <ul class="timeline">
+            <li><strong>Assessment completed</strong><span>Payments API / 24 endpoints analyzed</span><time data-ago>2026-11-24T08:20:00Z</time></li>
+            <li><strong>Critical finding validated</strong><span>Authorization bypass on administrative route</span><time data-ago>2026-11-24T07:45:00Z</time></li>
+            <li><strong>Specification imported</strong><span>OpenAPI 3.0 / Identity Services</span><time data-ago>2026-11-23T16:10:00Z</time></li>
+            <li><strong>Anomaly acknowledged</strong><span>High-frequency traffic on public endpoint</span><time data-ago>2026-11-23T11:32:00Z</time></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  {% if metrics %}{{ metrics|json_script:"apishield-metrics-data" }}{% elif metrics_data %}{{ metrics_data|json_script:"apishield-metrics-data" }}{% endif %}
+{% endblock %}

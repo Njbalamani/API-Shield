@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Vulnerability Management | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Remediation Workflow</p>
+      <h1>Vulnerability Assignments</h1>
+      <p class="page-subtitle">Ownership, priority, and verification state for validated security issues.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-outline-gold" href="/findings/">Browse findings</a></div>
+  </section>
+
+  <section class="panel" data-reveal>
+    <div class="table-toolbar">
+      <label class="topbar-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+        <input type="search" data-table-search placeholder="Search assignments" aria-label="Search assignments">
+      </label>
+      <div class="filter-group" data-filter-group data-filter-key="status">
+        <button class="filter-pill active" type="button" data-table-filter data-filter-value="all">All</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="assigned">Assigned</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="in_progress">In Progress</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="fixed">Fixed</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="closed">Closed</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" data-searchable-table>
+        <thead><tr><th>Finding</th><th>Assignee</th><th>Priority</th><th>Status</th><th>Severity</th><th>Due</th><th>Updated</th><th></th></tr></thead>
+        <tbody>
+          {% for assignment in assignments %}
+            <tr>
+              <td data-label="Finding"><a class="cell-primary" href="/vulnerabilities/{{ assignment.id }}/">{{ assignment.finding.title|default:'Finding' }}</a></td>
+              <td data-label="Assignee">{{ assignment.assignee|default:'Unassigned' }}</td>
+              <td data-label="Priority"><span class="badge badge-{{ assignment.priority }}">{{ assignment.priority }}</span></td>
+              <td data-label="Status" data-status="{{ assignment.status }}"><span class="badge badge-{{ assignment.status }}">{{ assignment.status }}</span></td>
+              <td data-label="Severity" data-severity="{{ assignment.finding.severity|default:'info' }}"><span class="badge badge-{{ assignment.finding.severity|default:'info' }}">{{ assignment.finding.severity|default:'info' }}</span></td>
+              <td data-label="Due">{{ assignment.due_date|default:'—' }}</td>
+              <td data-label="Updated">{{ assignment.updated_at|default:'—' }}</td>
+              <td data-label="Action" class="cell-actions"><a class="btn-link" href="/vulnerabilities/{{ assignment.id }}/">Manage</a></td>
+            </tr>
+          {% empty %}
+            <tr data-ignore-filter><td colspan="8">{% include "components/empty_state.html" with title='No assignments' message='Assign a finding to establish ownership and a remediation deadline.' action_url='/findings/' action_label='Open findings' %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

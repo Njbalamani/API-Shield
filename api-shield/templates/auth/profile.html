@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Profile | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Account Settings</p>
+      <h1>Security Profile</h1>
+      <p class="page-subtitle">Manage your identity, role, and authentication preferences.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-outline-gold" href="/accounts/api-keys/">Manage API keys</a></div>
+  </section>
+
+  <div class="grid grid-page">
+    <section class="panel form-card" data-reveal>
+      <div class="panel-head"><div><h3>Identity Details</h3><p>Changes are reflected across all workspace activity</p></div></div>
+      <div class="panel-body">
+        {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+        <form method="post" action="/accounts/profile/">
+          {% csrf_token %}
+          <div class="form-grid">
+            {% for field in form %}
+              <div class="field {% if field.name == 'email' or field.name == 'full_name' %}full{% endif %}">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<span class="help-text">{{ field.help_text }}</span>{% endif %}
+                {% if field.errors %}<ul class="errorlist">{{ field.errors }}</ul>{% endif %}
+              </div>
+            {% empty %}
+              <div class="field full"><label>Email</label><input class="form-control" value="{{ user.email|default:'' }}" name="email" type="email"></div>
+              <div class="field full"><label>Full name</label><input class="form-control" value="{{ user.full_name|default:'' }}" name="full_name" type="text"></div>
+            {% endfor %}
+          </div>
+          <div class="form-actions"><button class="btn btn-gold" type="submit">Save profile</button></div>
+        </form>
+      </div>
+    </section>
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Access Summary</h3><p>Current security context</p></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Name</dt><dd>{{ user.full_name|default:user.email|default:'—' }}</dd></div>
+            <div><dt>Email</dt><dd>{{ user.email|default:'—' }}</dd></div>
+            <div><dt>Role</dt><dd><span class="badge badge-gold">{{ user.role|default:'analyst' }}</span></dd></div>
+            <div><dt>Organization</dt><dd>{{ current_organization.name|default:'—' }}</dd></div>
+            <div><dt>Multi-factor</dt><dd>{% if user.mfa_enabled %}<span class="badge badge-low">Enabled</span>{% else %}<span class="badge badge-medium">Not configured</span>{% endif %}</dd></div>
+            <div><dt>Last login</dt><dd>{{ user.last_login|default:'—' }}</dd></div>
+          </dl>
+        </div>
+      </section>
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Security Note</h3></div></div>
+        <div class="panel-body">
+          <p class="text-muted" style="margin:0;font-size:12px">Multi-factor authentication and API credential rotation are enforced by your organization administrator. Contact your security lead to update elevated privileges.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

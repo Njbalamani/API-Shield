@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ organization.name|default:'Organization' }} | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Organization Workspace</p>
+      <h1>{{ organization.name|default:'Organization' }}</h1>
+      <p class="page-subtitle">{{ organization.description|default:'Security governance and asset ownership for this tenancy.' }}</p>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-outline-gold" href="/projects/create/">Add project</a>
+      <a class="btn btn-gold" href="/scans/start/">Start assessment</a>
+    </div>
+  </section>
+
+  <div class="grid grid-stats">
+    {% include "components/stat_card.html" with label='Projects' value=organization.projects.count|default:'0' tone='blue' note='Active API programs' %}
+    {% include "components/stat_card.html" with label='Members' value=organization.memberships.count|default:'0' tone='gold' note='Authorized personnel' %}
+    {% include "components/stat_card.html" with label='Open Findings' value=organization.findings_count|default:'0' tone='danger' note='Requiring review' %}
+    {% include "components/stat_card.html" with label='API Keys' value=organization.api_keys.count|default:'0' tone='success' note='Active integrations' %}
+  </div>
+
+  <div class="grid grid-page">
+    <section class="panel" data-reveal>
+      <div class="panel-head"><div><h3>Projects</h3><p>API programs governed by this workspace</p></div><a class="btn-link" href="/projects/">View all</a></div>
+      <div class="table-wrap">
+        <table class="data-table" data-searchable-table>
+          <thead><tr><th>Project</th><th>Environment</th><th>Status</th><th>Endpoints</th><th></th></tr></thead>
+          <tbody>
+            {% for project in organization.projects.all %}
+              <tr>
+                <td data-label="Project"><a class="cell-primary" href="/projects/{{ project.id }}/">{{ project.name }}</a><span class="cell-sub">{{ project.slug }}</span></td>
+                <td data-label="Environment"><span class="badge badge-none">{{ project.environment }}</span></td>
+                <td data-label="Status" data-status="{{ project.status }}"><span class="badge badge-{{ project.status }}">{{ project.status }}</span></td>
+                <td data-label="Endpoints" class="text-mono">{{ project.endpoints.count|default:'0' }}</td>
+                <td data-label="Action" class="cell-actions"><a class="btn-link" href="/projects/{{ project.id }}/">Open</a></td>
+              </tr>
+            {% empty %}
+              <tr data-ignore-filter><td colspan="5">{% include "components/empty_state.html" with title='No projects yet' message='Create your first API project to start discovery and scanning.' action_url='/projects/create/' action_label='Create project' %}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Workspace Profile</h3><p>Registry and ownership details</p></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Identifier</dt><dd class="text-mono">{{ organization.slug|default:'—' }}</dd></div>
+            <div><dt>Created by</dt><dd>{{ organization.created_by|default:'—' }}</dd></div>
+            <div><dt>Created</dt><dd>{{ organization.created_at|default:'—' }}</dd></div>
+            <div><dt>Last updated</dt><dd>{{ organization.updated_at|default:'—' }}</dd></div>
+            <div><dt>State</dt><dd><span class="badge badge-{% if organization.is_active %}low{% else %}none{% endif %}">{% if organization.is_active %}Active{% else %}Inactive{% endif %}</span></dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Members</h3><p>Role-based access assignments</p></div></div>
+        <div class="panel-body">
+          <ul class="timeline">
+            {% for membership in organization.memberships.all %}
+              <li><strong>{{ membership.user.email|default:membership.user|default:'Member' }}</strong><span>{{ membership.role }} / {% if membership.is_active %}Active{% else %}Suspended{% endif %}</span><time>{{ membership.joined_at|default:'' }}</time></li>
+            {% empty %}
+              <li><strong>No members assigned</strong><span>Invite security personnel to collaborate.</span></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}API Keys | APIShield{% endblock %}
+{% block content %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Credential Vault</p>
+      <h1>API Keys</h1>
+      <p class="page-subtitle">Create and govern programmatic credentials for the APIShield API. Secrets are shown once at creation.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-gold" href="#create-key">Create credential</a></div>
+  </section>
+
+  <div class="grid grid-page">
+    <section class="panel" data-reveal>
+      <div class="table-toolbar">
+        <label class="topbar-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+          <input type="search" data-table-search placeholder="Search credentials" aria-label="Search credentials">
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" data-searchable-table>
+          <thead><tr><th>Name</th><th>Prefix</th><th>Status</th><th>Last used</th><th>Created</th><th></th></tr></thead>
+          <tbody>
+            {% for key in api_keys %}
+              <tr>
+                <td data-label="Name"><span class="cell-primary">{{ key.name|default:'Credential' }}</span></td>
+                <td data-label="Prefix"><span class="text-mono">{{ key.prefix|default:'—' }}</span></td>
+                <td data-label="Status" data-status="{% if key.is_active %}active{% else %}revoked{% endif %}"><span class="badge badge-{% if key.is_active %}low{% else %}none{% endif %}">{% if key.is_active %}Active{% else %}Revoked{% endif %}</span></td>
+                <td data-label="Last used">{{ key.last_used_at|default:'Never' }}</td>
+                <td data-label="Created">{{ key.created_at|default:'—' }}</td>
+                <td data-label="Action" class="cell-actions">
+                  <form method="post" action="/accounts/api-keys/{{ key.id }}/revoke/" data-confirm="Revoke this credential?">
+                    {% csrf_token %}
+                    <button class="btn btn-danger btn-sm" type="submit">Revoke</button>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr data-ignore-filter><td colspan="6">{% include "components/empty_state.html" with title='No credentials issued' message='Generate a key to connect automation to the APIShield API.' %}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" id="create-key" data-reveal>
+      <div class="panel-head"><div><h3>Issue Credential</h3><p>Scope is inherited from your active organization</p></div></div>
+      <div class="panel-body">
+        {% if generated_key %}
+          <div class="alert alert-success"><span class="alert-mark">K</span><span>Copy this key now. It will not be displayed again.</span></div>
+          <pre class="code-block"><code>{{ generated_key }}</code><span class="code-toolbar"><button class="btn btn-sm" type="button" data-copy-code>Copy</button></span></pre>
+        {% endif %}
+        {% firstof key_form form '' as credential_form %}
+        {% if credential_form.non_field_errors %}<div class="alert alert-error">{{ credential_form.non_field_errors }}</div>{% endif %}
+        <form method="post" action="/accounts/api-keys/">
+          {% csrf_token %}
+          {% for field in credential_form %}
+            <div class="field">
+              {{ field.label_tag }}
+              {{ field }}
+              {% if field.help_text %}<span class="help-text">{{ field.help_text }}</span>{% endif %}
+              {% if field.errors %}<ul class="errorlist">{{ field.errors }}</ul>{% endif %}
+            </div>
+          {% empty %}
+            <div class="field"><label for="key-name">Credential name</label><input class="form-control" id="key-name" name="name" placeholder="CI pipeline" required><span class="help-text">Use a descriptive name that identifies the integration.</span></div>
+          {% endfor %}
+          <div class="form-actions"><button class="btn btn-gold" type="submit">Generate key</button></div>
+        </form>
+      </div>
+    </section>
+  </div>
+{% endblock %}

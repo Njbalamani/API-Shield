@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Create Account | APIShield{% endblock %}
+{% block content %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Enterprise Onboarding</p>
+      <h1>Request Access</h1>
+      <p class="page-subtitle">Establish a security analyst identity within your organization workspace.</p>
+    </div>
+  </section>
+
+  <div class="grid grid-page">
+    <section class="panel form-card" data-reveal>
+      <div class="panel-head"><div><h3>Account Details</h3><p>All fields are reviewed against enterprise policy</p></div></div>
+      <div class="panel-body">
+        {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+        <form method="post" action="/accounts/register/">
+          {% csrf_token %}
+          <div class="form-section-title">Identity</div>
+          <div class="form-grid">
+            {% for field in form %}
+              <div class="field {% if field.field.widget.input_type == 'password' or field.name == 'email' %}full{% endif %}">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<span class="help-text">{{ field.help_text }}</span>{% endif %}
+                {% if field.errors %}<ul class="errorlist">{{ field.errors }}</ul>{% endif %}
+              </div>
+            {% empty %}
+              <div class="field full"><label>Email</label><input class="form-control" type="email" name="email" required></div>
+              <div class="field"><label>Full name</label><input class="form-control" type="text" name="full_name" required></div>
+              <div class="field"><label>Username</label><input class="form-control" type="text" name="username" required></div>
+            {% endfor %}
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-gold" type="submit">Create secure account</button>
+            <a class="btn-link" href="/accounts/login/">Return to sign in</a>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel" data-reveal>
+      <div class="panel-head"><div><h3>Registration Policy</h3><p>Requirements before provisioning</p></div></div>
+      <div class="panel-body">
+        <ul class="timeline">
+          <li><strong>Corporate identity</strong><span>Use an organization-controlled email address.</span></li>
+          <li><strong>Strong credential</strong><span>Minimum twelve characters with mixed character classes.</span></li>
+          <li><strong>Role assignment</strong><span>Permissions are granted by an organization administrator.</span></li>
+          <li><strong>Authorization scope</strong><span>Testing privileges require documented approval.</span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+{% endblock %}

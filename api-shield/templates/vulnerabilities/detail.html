@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Assignment #{{ assignment.id|default:'' }} | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Remediation Workflow</p>
+      <h1>{{ assignment.finding.title|default:'Vulnerability Assignment' }}</h1>
+      <p class="page-subtitle">Ownership and verification record for this validated issue.</p>
+    </div>
+    <div class="page-actions">
+      <span class="badge badge-{{ assignment.status|default:'assigned' }}">{{ assignment.status|default:'assigned' }}</span>
+      <a class="btn btn-outline-gold" href="/findings/{{ assignment.finding.id }}/">Open finding</a>
+    </div>
+  </section>
+
+  <div class="grid grid-page">
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Remediation Notes</h3><p>Context recorded by the assigned engineer</p></div></div>
+        <div class="panel-body"><p style="margin:0;color:var(--text-soft);font-size:13px">{{ assignment.notes|default:'No remediation notes have been recorded.' }}</p></div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Verification History</h3><p>Independent validation outcomes</p></div></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Result</th><th>Verifier</th><th>Notes</th><th>Verified</th></tr></thead>
+            <tbody>
+              {% for record in assignment.verifications.all %}
+                <tr>
+                  <td data-label="Result"><span class="badge badge-{{ record.result }}">{{ record.result }}</span></td>
+                  <td data-label="Verifier">{{ record.verifier|default:'—' }}</td>
+                  <td data-label="Notes">{{ record.notes|default:'—' }}</td>
+                  <td data-label="Verified">{{ record.verified_at|default:'—' }}</td>
+                </tr>
+              {% empty %}
+                <tr data-ignore-filter><td colspan="4">{% include "components/empty_state.html" with title='No verification records' message='Validation results are recorded after a fix is submitted.' %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Assignment Record</h3><p>Ownership and deadline</p></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Identifier</dt><dd class="text-mono">VUL-{{ assignment.id|default:'—' }}</dd></div>
+            <div><dt>Finding</dt><dd><a class="btn-link" href="/findings/{{ assignment.finding.id }}/">{{ assignment.finding.title|default:'—' }}</a></dd></div>
+            <div><dt>Assignee</dt><dd>{{ assignment.assignee|default:'Unassigned' }}</dd></div>
+            <div><dt>Assigned by</dt><dd>{{ assignment.assigned_by|default:'—' }}</dd></div>
+            <div><dt>Priority</dt><dd><span class="badge badge-{{ assignment.priority }}">{{ assignment.priority }}</span></dd></div>
+            <div><dt>Status</dt><dd><span class="badge badge-{{ assignment.status }}">{{ assignment.status }}</span></dd></div>
+            <div><dt>Due date</dt><dd>{{ assignment.due_date|default:'—' }}</dd></div>
+            <div><dt>Updated</dt><dd>{{ assignment.updated_at|default:'—' }}</dd></div>
+          </dl>
+        </div>
+      </section>
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Finding Context</h3></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Severity</dt><dd><span class="badge badge-{{ assignment.finding.severity|default:'info' }}">{{ assignment.finding.severity|default:'info' }}</span></dd></div>
+            <div><dt>Risk score</dt><dd class="text-mono">{{ assignment.finding.risk_score|default:'0'|floatformat:1 }}</dd></div>
+            <div><dt>Endpoint</dt><dd class="text-mono">{{ assignment.finding.endpoint.path|default:'—' }}</dd></div>
+          </dl>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

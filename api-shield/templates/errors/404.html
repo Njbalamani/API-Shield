@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Not Found | APIShield{% endblock %}
+{% block content %}
+  <section class="error-layout">
+    <div class="panel error-card">
+      <div class="error-code">404</div>
+      <h1>Route Not Found</h1>
+      <p>The requested security resource does not exist, has been archived, or is outside your authorized scope.</p>
+      <div class="page-actions" style="justify-content:center">
+        <a class="btn btn-gold" href="/dashboard/">Return to overview</a>
+        <a class="btn" href="/projects/">Browse projects</a>
+      </div>
+    </div>
+  </section>
+{% endblock %}

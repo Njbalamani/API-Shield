@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Assign Finding | APIShield{% endblock %}
+{% block content %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Remediation Workflow</p>
+      <h1>Assign Vulnerability</h1>
+      <p class="page-subtitle">Establish clear ownership, urgency, and a target resolution date.</p>
+    </div>
+  </section>
+
+  <div class="grid grid-page">
+    <section class="panel form-card" data-reveal>
+      <div class="panel-head"><div><h3>Assignment Details</h3><p>{{ finding.title|default:'Selected finding' }}</p></div></div>
+      <div class="panel-body">
+        {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+        <form method="post" action="/vulnerabilities/{{ finding.id|default:0 }}/assign/">
+          {% csrf_token %}
+          <div class="form-grid">
+            {% for field in form %}
+              <div class="field {% if field.name == 'notes' %}full{% endif %}">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<span class="help-text">{{ field.help_text }}</span>{% endif %}
+                {% if field.errors %}<ul class="errorlist">{{ field.errors }}</ul>{% endif %}
+              </div>
+            {% empty %}
+              <div class="field"><label>Assignee</label><select class="form-control" name="assignee"><option>Select engineer</option></select></div>
+              <div class="field"><label>Priority</label><select class="form-control" name="priority"><option value="urgent">Urgent</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+              <div class="field"><label>Due date</label><input class="form-control" type="date" name="due_date"></div>
+              <div class="field full"><label>Notes</label><textarea class="form-control" name="notes" rows="5"></textarea></div>
+            {% endfor %}
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-gold" type="submit">Confirm assignment</button>
+            <a class="btn" href="/vulnerabilities/">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel" data-reveal>
+      <div class="panel-head"><div><h3>Finding Summary</h3><p>Context for the assigned engineer</p></div></div>
+      <div class="panel-body">
+        <dl class="kv-list">
+          <div><dt>Title</dt><dd>{{ finding.title|default:'—' }}</dd></div>
+          <div><dt>Severity</dt><dd><span class="badge badge-{{ finding.severity|default:'info' }}">{{ finding.severity|default:'info' }}</span></dd></div>
+          <div><dt>Risk</dt><dd class="text-mono">{{ finding.risk_score|default:'0'|floatformat:1 }}</dd></div>
+          <div><dt>Endpoint</dt><dd class="text-mono">{{ finding.endpoint.path|default:'—' }}</dd></div>
+          <div><dt>OWASP</dt><dd>{{ finding.owasp_category|default:'—' }}</dd></div>
+          <div><dt>Detected</dt><dd>{{ finding.created_at|default:'—' }}</dd></div>
+        </dl>
+      </div>
+    </section>
+  </div>
+{% endblock %}

@@ -1,0 +1,64 @@
+<section class="panel" aria-labelledby="findings-table-title">
+  <div class="panel-head">
+    <div>
+      <h3 id="findings-table-title">{{ heading|default:'Security Findings' }}</h3>
+      <p>{{ subheading|default:'Prioritized by risk score and severity' }}</p>
+    </div>
+    {% if view_all_url %}<a class="btn btn-outline-gold btn-sm" href="{{ view_all_url }}">View all</a>{% endif %}
+  </div>
+  <div class="table-toolbar">
+    <label class="topbar-search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+      <input type="search" data-table-search placeholder="Search findings" aria-label="Search findings">
+    </label>
+    <div class="filter-group" data-filter-group data-filter-key="severity">
+      <button class="filter-pill active" type="button" data-table-filter data-filter-value="all">All</button>
+      <button class="filter-pill" type="button" data-table-filter data-filter-value="critical">Critical</button>
+      <button class="filter-pill" type="button" data-table-filter data-filter-value="high">High</button>
+      <button class="filter-pill" type="button" data-table-filter data-filter-value="medium">Medium</button>
+      <button class="filter-pill" type="button" data-table-filter data-filter-value="low">Low</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table" data-searchable-table>
+      <thead>
+        <tr>
+          <th>Finding</th>
+          <th>Severity</th>
+          <th>Endpoint</th>
+          <th>Status</th>
+          <th>Risk</th>
+          <th>Detected</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for finding in findings %}
+          <tr>
+            <td data-label="Finding">
+              <a class="cell-primary" href="/findings/{{ finding.id }}/">{{ finding.title|default:'Untitled finding' }}</a>
+              <span class="cell-sub">{% firstof finding.rule.rule_id finding.cwe 'Signature match' %}</span>
+            </td>
+            <td data-label="Severity" data-severity="{{ finding.severity|default:'info' }}">
+              <span class="badge badge-{{ finding.severity|default:'info' }}">{{ finding.severity|default:'info' }}</span>
+            </td>
+            <td data-label="Endpoint">
+              <span class="text-mono">{{ finding.endpoint.method|default:'GET' }} {{ finding.endpoint.path|default:'—' }}</span>
+            </td>
+            <td data-label="Status" data-status="{{ finding.status|default:'open' }}">
+              <span class="badge badge-{{ finding.status|default:'open' }}">{{ finding.status|default:'open' }}</span>
+            </td>
+            <td data-label="Risk"><span class="text-mono">{{ finding.risk_score|default:'0'|floatformat:0 }}</span></td>
+            <td data-label="Detected">{{ finding.created_at|default:'—' }}</td>
+            <td data-label="Action" class="cell-actions"><a class="btn-link" href="/findings/{{ finding.id }}/">Inspect</a></td>
+          </tr>
+        {% empty %}
+          <tr data-ignore-filter><td colspan="7">
+            {% include "components/empty_state.html" with title=empty_title|default:'No findings matched' message=empty_message|default:'Adjust your filters or start a new assessment.' action_url=empty_action_url action_label='Start a scan' %}
+          </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel-foot">Showing {{ findings|length }} result{{ findings|length|pluralize }}</div>
+</section>

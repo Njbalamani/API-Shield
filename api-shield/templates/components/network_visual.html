@@ -1,0 +1,31 @@
+<section class="panel network-panel" aria-labelledby="network-title">
+  <div class="panel-head">
+    <div>
+      <h3 id="network-title">API Topology</h3>
+      <p>Three-dimensional service graph with live risk telemetry</p>
+    </div>
+    <div class="filter-group">
+      <span class="badge badge-gold">{{ topology_nodes|default:10 }} nodes</span>
+      <span class="badge badge-none">{{ topology_links|default:11 }} links</span>
+    </div>
+  </div>
+  <div class="network-canvas" id="network-visual" data-network-visual>
+    <div class="network-fallback"></div>
+    <div class="network-overlay">
+      <span class="network-corner tl"></span>
+      <span class="network-corner tr"></span>
+      <span class="network-corner bl"></span>
+      <span class="network-corner br"></span>
+      <span class="network-hint">Drag focus / hover a node for detail</span>
+    </div>
+    <div class="network-tooltip"><strong></strong><span></span></div>
+  </div>
+  <div class="network-legend">
+    <span class="legend-item"><i class="legend-swatch" style="background:#ff5d70;color:#ff5d70"></i>Critical</span>
+    <span class="legend-item"><i class="legend-swatch" style="background:#ff9b4a;color:#ff9b4a"></i>High</span>
+    <span class="legend-item"><i class="legend-swatch" style="background:#f0c751;color:#f0c751"></i>Medium</span>
+    <span class="legend-item"><i class="legend-swatch" style="background:#55b8ff;color:#55b8ff"></i>Low</span>
+    <span class="legend-item"><i class="legend-swatch" style="background:#8ea6c8;color:#8ea6c8"></i>Informational</span>
+  </div>
+</section>
+{% if topology %}{{ topology|json_script:"apishield-topology-data" }}{% elif topology_data %}{{ topology_data|json_script:"apishield-topology-data" }}{% endif %}

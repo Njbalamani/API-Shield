@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Scan #{{ scan_run.id|default:'' }} | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Assessment Run / {{ scan_run.project.name|default:'Project' }}</p>
+      <h1>Scan #{{ scan_run.id|default:'—' }}</h1>
+      <p class="page-subtitle">{{ scan_run.mode|default:'passive' }} assessment initiated by {{ scan_run.initiated_by|default:'platform' }}.</p>
+    </div>
+    <div class="page-actions">
+      <span class="badge badge-{{ scan_run.status|default:'running' }}">{{ scan_run.status|default:'running' }}</span>
+      <a class="btn btn-outline-gold" href="/reports/generate/">Export report</a>
+      <a class="btn btn-gold" href="/scans/start/">New scan</a>
+    </div>
+  </section>
+
+  <div class="grid grid-stats">
+    {% include "components/stat_card.html" with label='Endpoints' value=scan_run.endpoints_count|default:'0' tone='blue' note='Covered by scan' %}
+    {% include "components/stat_card.html" with label='Findings' value=scan_run.findings_count|default:'0' tone='gold' note='Validated issues' %}
+    {% include "components/stat_card.html" with label='Critical' value=scan_run.critical_count|default:'0' tone='danger' note='Immediate attention' %}
+    {% include "components/stat_card.html" with label='Risk Score' value=scan_run.risk_score|default:'0'|floatformat:1 tone='success' note='Composite score' %}
+  </div>
+
+  <div class="grid grid-page">
+    <div class="stack">
+      {% include "components/progress_bar.html" with heading='Live Execution' subheading='Assessment stages and evidence collection' scan_status=scan_run.status|default:'running' scan_progress=scan_run.progress|default:0 scan_engine=scan_run.mode|default:'Adaptive Engine' scan_scope=scan_run.project.name|default:'Authorized assets' %}
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Execution Log</h3><p>Structured events emitted by the scanner</p></div><span class="badge badge-gold">Streaming</span></div>
+        <div class="scan-log" data-scan-log>
+          {% for log in scan_run.logs.all %}
+            <div class="log-line"><span class="log-time">{{ log.created_at|time:"H:i:s" }}</span><span class="log-level {{ log.level|lower }}">{{ log.level }}</span><span>{{ log.message }}</span></div>
+          {% empty %}
+            <div class="log-line"><span class="log-time">--:--:--</span><span class="log-level info">INFO</span><span>Scanner initialized for authorized target scope</span></div>
+            <div class="log-line"><span class="log-time">--:--:--</span><span class="log-level ok">OK</span><span>Specification parsed and endpoint inventory locked</span></div>
+          {% endfor %}
+        </div>
+      </section>
+
+      {% include "components/finding_table.html" with findings=scan_run.findings.all heading='Scan Findings' subheading='Issues identified during this execution' %}
+    </div>
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Run Summary</h3><p>Execution metadata</p></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Identifier</dt><dd class="text-mono">SCAN-{{ scan_run.id|default:'—' }}</dd></div>
+            <div><dt>Project</dt><dd>{{ scan_run.project.name|default:'—' }}</dd></div>
+            <div><dt>Specification</dt><dd>{{ scan_run.specification.name|default:'—' }}</dd></div>
+            <div><dt>Mode</dt><dd><span class="badge badge-none">{{ scan_run.mode|default:'—' }}</span></dd></div>
+            <div><dt>Status</dt><dd><span class="badge badge-{{ scan_run.status|default:'running' }}">{{ scan_run.status|default:'running' }}</span></dd></div>
+            <div><dt>Authorization</dt><dd>{% if scan_run.authorization_verified %}<span class="badge badge-low">Verified</span>{% else %}<span class="badge badge-medium">Pending</span>{% endif %}</dd></div>
+            <div><dt>Started</dt><dd>{{ scan_run.started_at|default:'—' }}</dd></div>
+            <div><dt>Finished</dt><dd>{{ scan_run.finished_at|default:'—' }}</dd></div>
+          </dl>
+          {% if scan_run.error_message %}
+            <div class="alert alert-error" style="margin-top:18px"><span class="alert-mark">!</span><span>{{ scan_run.error_message }}</span></div>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Severity Snapshot</h3><p>Distribution for this run</p></div></div>
+        <div class="panel-body">
+          <div class="severity-list" data-severity-list></div>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

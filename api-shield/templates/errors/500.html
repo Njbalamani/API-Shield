@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Server Error | APIShield{% endblock %}
+{% block content %}
+  <section class="error-layout">
+    <div class="panel error-card">
+      <div class="error-code">500</div>
+      <h1>Service Interruption</h1>
+      <p>The command center encountered an unexpected condition. The event has been recorded for engineering review.</p>
+      <div class="page-actions" style="justify-content:center">
+        <a class="btn btn-gold" href="/dashboard/">Return to overview</a>
+        <a class="btn" href="/monitor/alerts/">Check system alerts</a>
+      </div>
+    </div>
+  </section>
+{% endblock %}

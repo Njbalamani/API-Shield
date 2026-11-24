@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Endpoints | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Discovery Inventory</p>
+      <h1>API Endpoints</h1>
+      <p class="page-subtitle">A living catalog of routes, methods, and exposure classifications.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-outline-gold" href="/projects/">Browse projects</a></div>
+  </section>
+
+  <section class="panel" data-reveal>
+    <div class="table-toolbar">
+      <label class="topbar-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+        <input type="search" data-table-search placeholder="Search paths or operations" aria-label="Search endpoints">
+      </label>
+      <div class="filter-group" data-filter-group data-filter-key="severity">
+        <button class="filter-pill active" type="button" data-table-filter data-filter-value="all">All risk</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="critical">Critical</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="high">High</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="medium">Medium</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="low">Low</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" data-searchable-table>
+        <thead><tr><th>Method</th><th>Path</th><th>Project</th><th>Risk</th><th>Authentication</th><th>Tags</th><th>Updated</th><th></th></tr></thead>
+        <tbody>
+          {% for endpoint in endpoints %}
+            <tr>
+              <td data-label="Method"><span class="method method-{{ endpoint.method|lower }}">{{ endpoint.method }}</span></td>
+              <td data-label="Path"><a class="cell-primary text-mono" href="/endpoints/{{ endpoint.id }}/">{{ endpoint.path }}</a><span class="cell-sub">{{ endpoint.operation_id|default:endpoint.summary|default:'No operation id' }}</span></td>
+              <td data-label="Project">{{ endpoint.project.name|default:'—' }}</td>
+              <td data-label="Risk" data-severity="{{ endpoint.risk_level|default:'none' }}"><span class="badge badge-{{ endpoint.risk_level|default:'none' }}">{{ endpoint.risk_level|default:'none' }}</span></td>
+              <td data-label="Authentication" data-status="{% if endpoint.auth_required %}active{% else %}pending{% endif %}"><span class="badge badge-{% if endpoint.auth_required %}low{% else %}medium{% endif %}">{% if endpoint.auth_required %}Required{% else %}None{% endif %}</span></td>
+              <td data-label="Tags">{{ endpoint.tags|default:'—' }}</td>
+              <td data-label="Updated">{{ endpoint.updated_at|default:'—' }}</td>
+              <td data-label="Action" class="cell-actions"><a class="btn-link" href="/endpoints/{{ endpoint.id }}/">Inspect</a></td>
+            </tr>
+          {% empty %}
+            <tr data-ignore-filter><td colspan="8">{% include "components/empty_state.html" with title='No endpoints discovered' message='Import an API specification or run a discovery scan to populate the inventory.' action_url='/projects/' action_label='Open projects' %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="panel-foot">{{ endpoints|length }} endpoint{{ endpoints|length|pluralize }} in inventory</div>
+  </section>
+{% endblock %}

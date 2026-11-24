@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Alert #{{ alert.id|default:'' }} | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Behaviour Monitoring / {{ alert.project.name|default:'Project' }}</p>
+      <h1>{{ alert.title|default:'Security Alert' }}</h1>
+      <p class="page-subtitle">{{ alert.description|default:'Anomalous activity detected by the behavioural engine.' }}</p>
+    </div>
+    <div class="page-actions">
+      <span class="badge badge-{{ alert.severity|default:'medium' }}">{{ alert.severity|default:'medium' }}</span>
+      <span class="badge badge-{{ alert.status|default:'open' }}">{{ alert.status|default:'open' }}</span>
+    </div>
+  </section>
+
+  <div class="grid grid-page">
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Evidence Payload</h3><p>Signals collected by the monitoring engine</p></div><span class="code-lang">JSON</span></div>
+        <div class="panel-body" style="padding:14px"><pre class="code-block"><code>{{ alert.evidence|default:'{}' }}</code><span class="code-toolbar"><button class="btn btn-sm" type="button" data-copy-code>Copy</button></span></pre></div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Related Traffic</h3><p>Recent requests associated with this signal</p></div><a class="btn-link" href="/monitor/logs/">Open logs</a></div>
+        <div class="table-wrap">
+          <table class="data-table" data-searchable-table>
+            <thead><tr><th>Time</th><th>Method</th><th>Path</th><th>Status</th><th>Client IP</th></tr></thead>
+            <tbody>
+              {% for log in related_logs %}
+                <tr>
+                  <td data-label="Time">{{ log.timestamp|default:'—' }}</td>
+                  <td data-label="Method"><span class="method method-{{ log.method|lower }}">{{ log.method }}</span></td>
+                  <td data-label="Path" class="text-mono">{{ log.path }}</td>
+                  <td data-label="Status">{{ log.status_code|default:'—' }}</td>
+                  <td data-label="Client IP" class="text-mono">{{ log.ip_address|default:'—' }}</td>
+                </tr>
+              {% empty %}
+                <tr data-ignore-filter><td colspan="5">{% include "components/empty_state.html" with title='No correlated requests' message='Traffic samples are attached when the monitoring engine retains matching events.' %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Alert Record</h3><p>Classification and lifecycle</p></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Identifier</dt><dd class="text-mono">ALT-{{ alert.id|default:'—' }}</dd></div>
+            <div><dt>Type</dt><dd><span class="badge badge-none">{{ alert.alert_type|default:'—' }}</span></dd></div>
+            <div><dt>Severity</dt><dd><span class="badge badge-{{ alert.severity|default:'medium' }}">{{ alert.severity|default:'medium' }}</span></dd></div>
+            <div><dt>Status</dt><dd><span class="badge badge-{{ alert.status|default:'open' }}">{{ alert.status|default:'open' }}</span></dd></div>
+            <div><dt>Project</dt><dd>{{ alert.project.name|default:'—' }}</dd></div>
+            <div><dt>Endpoint</dt><dd class="text-mono">{{ alert.endpoint.path|default:'—' }}</dd></div>
+            <div><dt>Detected</dt><dd>{{ alert.created_at|default:'—' }}</dd></div>
+            <div><dt>Updated</dt><dd>{{ alert.updated_at|default:'—' }}</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="panel form-card" data-reveal>
+        <div class="panel-head"><div><h3>Triage</h3><p>Update investigation state</p></div></div>
+        <div class="panel-body">
+          {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+          <form method="post" action="/monitor/alerts/{{ alert.id|default:0 }}/">
+            {% csrf_token %}
+            {% for field in form %}
+              <div class="field">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<span class="help-text">{{ field.help_text }}</span>{% endif %}
+                {% if field.errors %}<ul class="errorlist">{{ field.errors }}</ul>{% endif %}
+              </div>
+            {% empty %}
+              <div class="field"><label for="alert-status">Status</label><select class="form-control" id="alert-status" name="status"><option value="acknowledged">Acknowledged</option><option value="resolved">Resolved</option><option value="open">Open</option></select></div>
+            {% endfor %}
+            <div class="form-actions"><button class="btn btn-gold" type="submit">Update alert</button></div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

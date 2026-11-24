@@ -1,0 +1,46 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#04060c">
+  <meta name="description" content="APIShield enterprise API security command center">
+  <title>{% block title %}APIShield | Security Command Center{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script defer src="{% static 'js/main.js' %}"></script>
+  <script defer src="{% static 'js/charts.js' %}"></script>
+  <script defer src="{% static 'js/topology.js' %}"></script>
+  <script defer src="{% static 'js/scanner.js' %}"></script>
+  <script defer src="{% static 'js/transitions.js' %}"></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="app-shell">
+    {% include "components/sidebar.html" %}
+    <div class="main">
+      {% include "components/topbar.html" %}
+      <main class="content" id="main-content">
+        {% if messages %}
+          <div class="messages" role="status">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags|default:'info' }}">
+                <span class="alert-mark">{{ message.tags|default:'i'|slice:':1'|upper }}</span>
+                <span>{{ message }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  <div class="sidebar-scrim" aria-hidden="true"></div>
+  <div class="toast-stack" aria-live="polite"></div>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

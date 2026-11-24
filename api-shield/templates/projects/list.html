@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Projects | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Asset Inventory</p>
+      <h1>API Projects</h1>
+      <p class="page-subtitle">Every monitored program, its environment, and its authorization posture.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-gold" href="/projects/create/">New project</a></div>
+  </section>
+
+  <section class="panel" data-reveal>
+    <div class="table-toolbar">
+      <label class="topbar-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+        <input type="search" data-table-search placeholder="Search projects" aria-label="Search projects">
+      </label>
+      <div class="filter-group" data-filter-group data-filter-key="status">
+        <button class="filter-pill active" type="button" data-table-filter data-filter-value="all">All</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="active">Active</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="archived">Archived</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" data-searchable-table>
+        <thead><tr><th>Project</th><th>Environment</th><th>Status</th><th>Endpoints</th><th>Authorization</th><th>Owner</th><th>Updated</th><th></th></tr></thead>
+        <tbody>
+          {% for project in projects %}
+            <tr>
+              <td data-label="Project"><a class="cell-primary" href="/projects/{{ project.id }}/">{{ project.name }}</a><span class="cell-sub">{{ project.slug }}</span></td>
+              <td data-label="Environment"><span class="badge badge-none">{{ project.environment }}</span></td>
+              <td data-label="Status" data-status="{{ project.status }}"><span class="badge badge-{{ project.status }}">{{ project.status }}</span></td>
+              <td data-label="Endpoints" class="text-mono">{{ project.endpoints.count|default:'0' }}</td>
+              <td data-label="Authorization" data-status="{% if project.authorization_confirmed %}active{% else %}pending{% endif %}"><span class="badge badge-{% if project.authorization_confirmed %}low{% else %}medium{% endif %}">{% if project.authorization_confirmed %}Confirmed{% else %}Pending{% endif %}</span></td>
+              <td data-label="Owner">{{ project.owner|default:'Unassigned' }}</td>
+              <td data-label="Updated">{{ project.updated_at|default:'—' }}</td>
+              <td data-label="Action" class="cell-actions"><a class="btn-link" href="/projects/{{ project.id }}/">Open</a></td>
+            </tr>
+          {% empty %}
+            <tr data-ignore-filter><td colspan="8">{% include "components/empty_state.html" with title='No projects found' message='Register an API program to begin discovery and assessment.' action_url='/projects/create/' action_label='Create project' %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="panel-foot">Showing {{ projects|length }} project{{ projects|length|pluralize }}</div>
+  </section>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Alert Feed | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Behaviour Monitoring</p>
+      <h1>Alert Feed</h1>
+      <p class="page-subtitle">Anomalous traffic patterns and policy violations detected across monitored APIs.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-outline-gold" href="/monitor/logs/">Inspect request logs</a></div>
+  </section>
+
+  <div class="grid grid-stats">
+    {% include "components/stat_card.html" with label='Open Alerts' value=open_count|default:'3' tone='danger' note='Awaiting triage' %}
+    {% include "components/stat_card.html" with label='Acknowledged' value=acknowledged_count|default:'2' tone='gold' note='Under review' %}
+    {% include "components/stat_card.html" with label='Resolved' value=resolved_count|default:'7' tone='success' note='Closed this cycle' %}
+    {% include "components/stat_card.html" with label='Monitored Traffic' value=request_count|default:'18.4k' tone='blue' note='Observed requests' %}
+  </div>
+
+  <section class="panel" data-reveal>
+    <div class="table-toolbar">
+      <label class="topbar-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+        <input type="search" data-table-search placeholder="Search alerts" aria-label="Search alerts">
+      </label>
+      <div class="filter-group" data-filter-group data-filter-key="status">
+        <button class="filter-pill active" type="button" data-table-filter data-filter-value="all">All</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="open">Open</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="acknowledged">Acknowledged</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="resolved">Resolved</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" data-searchable-table>
+        <thead><tr><th>Alert</th><th>Type</th><th>Severity</th><th>Status</th><th>Project</th><th>Endpoint</th><th>Detected</th><th></th></tr></thead>
+        <tbody>
+          {% for alert in alerts %}
+            <tr>
+              <td data-label="Alert"><a class="cell-primary" href="/monitor/alerts/{{ alert.id }}/">{{ alert.title }}</a></td>
+              <td data-label="Type"><span class="badge badge-none">{{ alert.alert_type }}</span></td>
+              <td data-label="Severity" data-severity="{{ alert.severity }}"><span class="badge badge-{{ alert.severity }}">{{ alert.severity }}</span></td>
+              <td data-label="Status" data-status="{{ alert.status }}"><span class="badge badge-{{ alert.status }}">{{ alert.status }}</span></td>
+              <td data-label="Project">{{ alert.project.name|default:'—' }}</td>
+              <td data-label="Endpoint" class="text-mono">{{ alert.endpoint.path|default:'—' }}</td>
+              <td data-label="Detected">{{ alert.created_at|default:'—' }}</td>
+              <td data-label="Action" class="cell-actions"><a class="btn-link" href="/monitor/alerts/{{ alert.id }}/">Investigate</a></td>
+            </tr>
+          {% empty %}
+            <tr data-ignore-filter><td colspan="8">{% include "components/empty_state.html" with title='No alerts detected' message='Behavioural monitoring is active and has not observed anomalies.' %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

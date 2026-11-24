@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Sign In | APIShield{% endblock %}
+{% block content %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Secure Access</p>
+      <h1>Command Center Login</h1>
+      <p class="page-subtitle">Authenticate with your enterprise credentials to continue.</p>
+    </div>
+  </section>
+
+  <div class="grid" style="grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr)">
+    <section class="panel form-card" data-reveal>
+      <div class="panel-head"><div><h3>Authenticate</h3><p>Protected session with encrypted transport</p></div></div>
+      <div class="panel-body">
+        {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+        <form method="post" action="/accounts/login/">
+          {% csrf_token %}
+          {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+          {% for field in form %}
+            <div class="field {% if field.field.widget.input_type == 'checkbox' %}full{% endif %}">
+              {{ field.label_tag }}
+              {{ field }}
+              {% if field.help_text %}<span class="help-text">{{ field.help_text }}</span>{% endif %}
+              {% if field.errors %}<ul class="errorlist">{{ field.errors }}</ul>{% endif %}
+            </div>
+          {% empty %}
+            <div class="field"><label for="id_email">Email</label><input class="form-control" id="id_email" name="username" type="email" autocomplete="username" required></div>
+            <div class="field"><label for="id_password">Password</label><input class="form-control" id="id_password" name="password" type="password" autocomplete="current-password" required></div>
+          {% endfor %}
+          <div class="form-actions">
+            <button class="btn btn-gold" type="submit">Sign in securely</button>
+            <a class="btn-link" href="/accounts/register/">Create an account</a>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel" data-reveal>
+      <div class="panel-head"><div><h3>Access Standards</h3><p>Controls enforced on every session</p></div></div>
+      <div class="panel-body">
+        <dl class="kv-list">
+          <div><dt>Transport</dt><dd>TLS 1.2 or higher</dd></div>
+          <div><dt>Session policy</dt><dd>HTTP-only, SameSite Lax</dd></div>
+          <div><dt>Authentication</dt><dd>Email identity with role binding</dd></div>
+          <div><dt>Audit trail</dt><dd>All attempts recorded</dd></div>
+          <div><dt>Data handling</dt><dd>Authorization scope verified</dd></div>
+        </dl>
+        <div class="alert alert-info" style="margin-top:20px">
+          <span class="alert-mark">i</span>
+          <span>Active testing is limited to assets with documented authorization.</span>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}

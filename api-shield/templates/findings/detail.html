@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ finding.title|default:'Finding' }} | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Finding / {% firstof finding.rule.rule_id finding.cwe 'Security Signature' %}</p>
+      <h1>{{ finding.title|default:'Untitled finding' }}</h1>
+      <p class="page-subtitle">{{ finding.endpoint.method|default:'GET' }} {{ finding.endpoint.path|default:'Endpoint not linked' }}</p>
+    </div>
+    <div class="page-actions">
+      <span class="badge badge-{{ finding.severity|default:'info' }}">{{ finding.severity|default:'info' }}</span>
+      <span class="badge badge-{{ finding.status|default:'open' }}">{{ finding.status|default:'open' }}</span>
+      <a class="btn btn-gold" href="/vulnerabilities/{{ finding.id }}/assign/">Assign finding</a>
+    </div>
+  </section>
+
+  <div class="grid grid-stats">
+    {% include "components/stat_card.html" with label='Risk Score' value=finding.risk_score|default:'0'|floatformat:1 tone='danger' note='Weighted impact' %}
+    {% include "components/stat_card.html" with label='Confidence' value=finding.confidence|default:'medium' tone='gold' note='Detection certainty' %}
+    {% include "components/stat_card.html" with label='OWASP' value=finding.owasp_category|default:'—' tone='blue' note='Category mapping' %}
+    {% include "components/stat_card.html" with label='Verification' value=finding.verified|yesno:'Verified,Pending' tone='success' note='Evidence state' %}
+  </div>
+
+  <div class="grid grid-page">
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Analysis</h3><p>Technical description and observed impact</p></div></div>
+        <div class="panel-body">
+          <p style="margin:0;color:var(--text-soft);font-size:13px">{{ finding.description|default:'No description has been recorded for this finding.' }}</p>
+        </div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Evidence</h3><p>Captured request and response artifacts</p></div><span class="code-lang">JSON</span></div>
+        <div class="panel-body" style="padding:14px">
+          <pre class="code-block"><code>{{ finding.evidence|default:'{}' }}</code><span class="code-toolbar"><button class="btn btn-sm" type="button" data-copy-code>Copy</button></span></pre>
+        </div>
+      </section>
+
+      <div class="grid grid-2">
+        <section class="panel" data-reveal>
+          <div class="panel-head"><div><h3>Request</h3></div></div>
+          <div class="panel-body" style="padding:14px"><pre class="code-block"><code>{{ finding.request|default:'{}' }}</code><span class="code-toolbar"><button class="btn btn-sm" type="button" data-copy-code>Copy</button></span></pre></div>
+        </section>
+        <section class="panel" data-reveal>
+          <div class="panel-head"><div><h3>Response</h3></div></div>
+          <div class="panel-body" style="padding:14px"><pre class="code-block"><code>{{ finding.response|default:'{}' }}</code><span class="code-toolbar"><button class="btn btn-sm" type="button" data-copy-code>Copy</button></span></pre></div>
+        </section>
+      </div>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Remediation Guidance</h3><p>Recommended corrective actions</p></div></div>
+        <div class="panel-body" style="padding:14px">
+          <pre class="code-block"><code>{{ finding.remediation|default:'{}' }}</code><span class="code-toolbar"><button class="btn btn-sm" type="button" data-copy-code>Copy</button></span></pre>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Finding Record</h3><p>Classification and provenance</p></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Identifier</dt><dd class="text-mono">FND-{{ finding.id|default:'—' }}</dd></div>
+            <div><dt>Severity</dt><dd><span class="badge badge-{{ finding.severity|default:'info' }}">{{ finding.severity|default:'info' }}</span></dd></div>
+            <div><dt>Status</dt><dd><span class="badge badge-{{ finding.status|default:'open' }}">{{ finding.status|default:'open' }}</span></dd></div>
+            <div><dt>CWE</dt><dd class="text-mono">{{ finding.cwe|default:'—' }}</dd></div>
+            <div><dt>OWASP</dt><dd>{{ finding.owasp_category|default:'—' }}</dd></div>
+            <div><dt>Scan</dt><dd><a class="btn-link" href="/scans/{{ finding.scan_run.id }}/">#{{ finding.scan_run.id|default:'—' }}</a></dd></div>
+            <div><dt>Assignment</dt><dd>{% if finding.assignment %}<a class="btn-link" href="/vulnerabilities/{{ finding.assignment.id }}/">{{ finding.assignment.assignee|default:'Assigned' }}</a>{% else %}Unassigned{% endif %}</dd></div>
+            <div><dt>Detected</dt><dd>{{ finding.created_at|default:'—' }}</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>AI Insight</h3><p>Automated risk interpretation</p></div></div>
+        <div class="panel-body">
+          {% if finding.ai_analysis %}
+            <p style="font-size:12px;color:var(--text-soft)">{{ finding.ai_analysis.explanation|truncatechars:260 }}</p>
+            <dl class="kv-list" style="margin-top:14px">
+              <div><dt>Priority</dt><dd><span class="badge badge-gold">{{ finding.ai_analysis.priority }}</span></dd></div>
+              <div><dt>Model</dt><dd>{{ finding.ai_analysis.model_name }}</dd></div>
+            </dl>
+            <a class="btn-link" href="/ai/{{ finding.ai_analysis.id }}/" style="margin-top:14px">Read full analysis</a>
+          {% else %}
+            <p class="text-muted" style="font-size:12px;margin:0">No AI analysis has been generated for this finding.</p>
+          {% endif %}
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

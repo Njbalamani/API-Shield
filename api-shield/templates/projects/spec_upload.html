@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Upload Specification | APIShield{% endblock %}
+{% block content %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">API Contracts</p>
+      <h1>Import OpenAPI Specification</h1>
+      <p class="page-subtitle">Discover endpoints, schemas, and security requirements from a machine-readable contract.</p>
+    </div>
+  </section>
+
+  <div class="grid grid-page">
+    <section class="panel form-card" data-reveal>
+      <div class="panel-head"><div><h3>Specification Source</h3><p>{{ project.name|default:'Selected project' }}</p></div></div>
+      <div class="panel-body">
+        {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+        <form method="post" action="/projects/{{ project.id|default:0 }}/specifications/" enctype="multipart/form-data">
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="field {% if field.name == 'raw_content' or field.name == 'file' %}full{% endif %}">
+              {{ field.label_tag }}
+              {{ field }}
+              {% if field.help_text %}<span class="help-text">{{ field.help_text }}</span>{% endif %}
+              {% if field.errors %}<ul class="errorlist">{{ field.errors }}</ul>{% endif %}
+            </div>
+          {% empty %}
+            <div class="field full"><label>Name</label><input class="form-control" name="name" type="text" required></div>
+            <div class="field"><label>Version</label><input class="form-control" name="version" type="text" placeholder="3.0.1"></div>
+            <div class="field"><label>Source</label><select class="form-control" name="source"><option value="file">File upload</option><option value="url">Remote URL</option><option value="pasted">Pasted text</option></select></div>
+            <div class="field full"><label>Specification file</label><input class="form-control" name="file" type="file" accept=".json,.yaml,.yml,.txt"></div>
+            <div class="field full"><label>Raw content</label><textarea class="form-control secret-field" name="raw_content" rows="8"></textarea></div>
+          {% endfor %}
+          <div class="form-actions">
+            <button class="btn btn-gold" type="submit">Import specification</button>
+            <a class="btn" href="/projects/{{ project.id|default:0 }}/">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel" data-reveal>
+      <div class="panel-head"><div><h3>Import Guidance</h3><p>Supported formats and validation rules</p></div></div>
+      <div class="panel-body">
+        <dl class="kv-list">
+          <div><dt>Formats</dt><dd>JSON, YAML, YML, TXT</dd></div>
+          <div><dt>Maximum size</dt><dd>10 MB</dd></div>
+          <div><dt>Specification</dt><dd>OpenAPI 2.0 / 3.x</dd></div>
+          <div><dt>Processing</dt><dd>Passive, local parsing</dd></div>
+        </dl>
+        <pre class="code-block" style="margin-top:18px"><code>openapi: 3.0.3
+info:
+  title: Payments API
+  version: 2.4.0
+paths:
+  /v1/transactions:
+    get:
+      operationId: listTransactions
+      security:
+        - bearerAuth: []</code><span class="code-toolbar"><span class="code-lang">YAML</span></span></pre>
+      </div>
+    </section>
+  </div>
+{% endblock %}

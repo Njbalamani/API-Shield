@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}New Project | APIShield{% endblock %}
+{% block content %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Asset Registration</p>
+      <h1>Create API Project</h1>
+      <p class="page-subtitle">Register an authorized API program before importing specifications or executing scans.</p>
+    </div>
+  </section>
+
+  <div class="grid grid-page">
+    <section class="panel form-card" data-reveal>
+      <div class="panel-head"><div><h3>Project Profile</h3><p>Core identification and deployment context</p></div></div>
+      <div class="panel-body">
+        {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+        <form method="post" action="/projects/create/" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-section-title">General</div>
+          <div class="form-grid">
+            {% for field in form %}
+              <div class="field {% if field.name == 'description' or field.name == 'base_url' %}full{% endif %}">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<span class="help-text">{{ field.help_text }}</span>{% endif %}
+                {% if field.errors %}<ul class="errorlist">{{ field.errors }}</ul>{% endif %}
+              </div>
+            {% empty %}
+              <div class="field"><label>Project name</label><input class="form-control" name="name" type="text" required></div>
+              <div class="field"><label>Slug</label><input class="form-control" name="slug" type="text" required></div>
+              <div class="field full"><label>Base URL</label><input class="form-control" name="base_url" type="url" placeholder="https://api.example.com"></div>
+              <div class="field full"><label>Description</label><textarea class="form-control" name="description"></textarea></div>
+            {% endfor %}
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-gold" type="submit">Create project</button>
+            <a class="btn" href="/projects/">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel" data-reveal>
+      <div class="panel-head"><div><h3>Authorization First</h3><p>Required before active testing</p></div></div>
+      <div class="panel-body">
+        <div class="alert alert-warning"><span class="alert-mark">!</span><span>Confirm ownership or written permission before enabling any active assessment mode.</span></div>
+        <ul class="timeline" style="margin-top:18px">
+          <li><strong>Passive analysis</strong><span>Specification and schema review only.</span></li>
+          <li><strong>Controlled active testing</strong><span>Rate-limited requests against approved hosts.</span></li>
+          <li><strong>Continuous monitoring</strong><span>Behavioural inspection of observed traffic.</span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+{% endblock %}

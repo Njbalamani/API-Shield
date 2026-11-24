@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Forbidden | APIShield{% endblock %}
+{% block content %}
+  <section class="error-layout">
+    <div class="panel error-card">
+      <div class="error-code">403</div>
+      <h1>Access Restricted</h1>
+      <p>Your current role does not grant permission for this workspace action. Contact an organization administrator if you believe this is incorrect.</p>
+      <div class="page-actions" style="justify-content:center">
+        <a class="btn btn-gold" href="/dashboard/">Return to overview</a>
+        <a class="btn" href="/accounts/profile/">Review access</a>
+      </div>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Authentication Audits | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Identity Assurance</p>
+      <h1>Authentication Audits</h1>
+      <p class="page-subtitle">Verification of token handling, expiration, and authorization controls.</p>
+    </div>
+  </section>
+
+  <section class="panel" data-reveal>
+    <div class="table-toolbar">
+      <label class="topbar-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+        <input type="search" data-table-search placeholder="Search audits" aria-label="Search audits">
+      </label>
+      <div class="filter-group" data-filter-group data-filter-key="status">
+        <button class="filter-pill active" type="button" data-table-filter data-filter-value="all">All</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="pass">Pass</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="warn">Warning</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="fail">Fail</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" data-searchable-table>
+        <thead><tr><th>Audit</th><th>Project</th><th>Endpoint</th><th>Auth Type</th><th>Result</th><th>Score</th><th>Expiry</th><th>Created</th><th></th></tr></thead>
+        <tbody>
+          {% for audit in audits %}
+            <tr>
+              <td data-label="Audit"><a class="cell-primary" href="/auth-audits/{{ audit.id }}/">#{{ audit.id }}</a></td>
+              <td data-label="Project">{{ audit.project.name|default:'—' }}</td>
+              <td data-label="Endpoint" class="text-mono">{{ audit.endpoint.path|default:'—' }}</td>
+              <td data-label="Auth Type"><span class="badge badge-none">{{ audit.auth_type }}</span></td>
+              <td data-label="Result" data-status="{{ audit.result }}"><span class="badge badge-{{ audit.result }}">{{ audit.result }}</span></td>
+              <td data-label="Score" class="text-mono">{{ audit.score|floatformat:0 }}</td>
+              <td data-label="Expiry">{% if audit.expiration_detected %}<span class="badge badge-high">Detected</span>{% else %}—{% endif %}</td>
+              <td data-label="Created">{{ audit.created_at|default:'—' }}</td>
+              <td data-label="Action" class="cell-actions"><a class="btn-link" href="/auth-audits/{{ audit.id }}/">Review</a></td>
+            </tr>
+          {% empty %}
+            <tr data-ignore-filter><td colspan="9">{% include "components/empty_state.html" with title='No audits recorded' message='Authentication checks appear here after a scan with identity testing enabled.' %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

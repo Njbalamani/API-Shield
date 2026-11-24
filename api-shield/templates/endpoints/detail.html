@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}{{ endpoint.method|default:'GET' }} {{ endpoint.path|default:'Endpoint' }} | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  {% firstof endpoint.summary endpoint.description 'Schema, security requirements, and observed findings for this route.' as endpoint_intro %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Endpoint Intelligence / {{ endpoint.project.name|default:'Project' }}</p>
+      <h1><span class="method method-{{ endpoint.method|default:'get'|lower }}">{{ endpoint.method|default:'GET' }}</span> {{ endpoint.path|default:'Endpoint' }}</h1>
+      <p class="page-subtitle">{{ endpoint_intro }}</p>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-outline-gold" href="/findings/">View findings</a>
+      <a class="btn btn-gold" href="/scans/start/">Scan route</a>
+    </div>
+  </section>
+
+  <div class="grid grid-stats">
+    {% include "components/stat_card.html" with label='Risk Level' value=endpoint.risk_level|default:'none' tone='danger' note='Calculated exposure' %}
+    {% include "components/stat_card.html" with label='Parameters' value=endpoint.endpoint_parameters.count|default:'0' tone='blue' note='Declared inputs' %}
+    {% include "components/stat_card.html" with label='Security Schemes' value=endpoint.security|length|default:'0' tone='gold' note='Defined requirements' %}
+    {% include "components/stat_card.html" with label='Findings' value=endpoint.findings.count|default:'0' tone='success' note='Validated issues' %}
+  </div>
+
+  <div class="grid grid-2" style="margin-bottom:18px">
+    <section class="panel" data-reveal>
+      <div class="panel-head"><div><h3>Request Schema</h3><p>Structural contract for inbound data</p></div><span class="code-lang">JSON</span></div>
+      <div class="panel-body" style="padding:14px">
+        <pre class="code-block"><code>{{ endpoint.request_schema|default:'{}' }}</code><span class="code-toolbar"><button class="btn btn-sm" type="button" data-copy-code>Copy</button></span></pre>
+      </div>
+    </section>
+    <section class="panel" data-reveal>
+      <div class="panel-head"><div><h3>Response Schema</h3><p>Declared response structure</p></div><span class="code-lang">JSON</span></div>
+      <div class="panel-body" style="padding:14px">
+        <pre class="code-block"><code>{{ endpoint.response_schema|default:'{}' }}</code><span class="code-toolbar"><button class="btn btn-sm" type="button" data-copy-code>Copy</button></span></pre>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid grid-page">
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Parameters</h3><p>Inputs accepted by this operation</p></div></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Location</th><th>Required</th><th>Type</th><th>Sensitive</th></tr></thead>
+            <tbody>
+              {% for parameter in endpoint.endpoint_parameters.all %}
+                <tr>
+                  <td data-label="Name" class="text-mono">{{ parameter.name }}</td>
+                  <td data-label="Location"><span class="badge badge-none">{{ parameter.location }}</span></td>
+                  <td data-label="Required">{% if parameter.required %}Yes{% else %}No{% endif %}</td>
+                  <td data-label="Type" class="text-mono">{{ parameter.schema.type|default:'string' }}</td>
+                  <td data-label="Sensitive"><span class="badge badge-{% if parameter.sensitive %}high{% else %}none{% endif %}">{% if parameter.sensitive %}Yes{% else %}No{% endif %}</span></td>
+                </tr>
+              {% empty %}
+                <tr data-ignore-filter><td colspan="5">{% include "components/empty_state.html" with title='No parameters declared' message='This operation has no documented inputs.' %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Associated Findings</h3><p>Issues detected on this route</p></div></div>
+        <div class="panel-body tight">
+          {% include "components/finding_table.html" with findings=endpoint.findings.all heading='Route Findings' subheading='Validated security observations' %}
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Security Profile</h3><p>Authentication and access controls</p></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Authentication</dt><dd>{% if endpoint.auth_required %}<span class="badge badge-low">Required</span>{% else %}<span class="badge badge-high">None declared</span>{% endif %}</dd></div>
+            <div><dt>Schemes</dt><dd class="text-mono">{{ endpoint.auth_schemes|default:'—' }}</dd></div>
+            <div><dt>Security</dt><dd class="text-mono">{{ endpoint.security|default:'—' }}</dd></div>
+            <div><dt>Tags</dt><dd>{{ endpoint.tags|default:'—' }}</dd></div>
+            <div><dt>Operation ID</dt><dd class="text-mono">{{ endpoint.operation_id|default:'—' }}</dd></div>
+            <div><dt>State</dt><dd><span class="badge badge-{% if endpoint.is_active %}low{% else %}none{% endif %}">{% if endpoint.is_active %}Active{% else %}Inactive{% endif %}</span></dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Lifecycle</h3><p>Discovery and change timeline</p></div></div>
+        <div class="panel-body">
+          <ul class="timeline">
+            <li><strong>Discovered</strong><span>From specification or traffic analysis</span><time>{{ endpoint.discovered_at|default:'' }}</time></li>
+            <li><strong>Last updated</strong><span>Schema or metadata refreshed</span><time>{{ endpoint.updated_at|default:'' }}</time></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

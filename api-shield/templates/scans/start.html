@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Start Scan | APIShield{% endblock %}
+{% block content %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Assessment Control</p>
+      <h1>Initiate Security Scan</h1>
+      <p class="page-subtitle">Configure scope and engine behavior before launching an authorized assessment.</p>
+    </div>
+  </section>
+
+  <div class="grid grid-page">
+    <section class="panel form-card" data-reveal>
+      <div class="panel-head"><div><h3>Scan Configuration</h3><p>Choose target, mode, and execution safeguards</p></div></div>
+      <div class="panel-body">
+        {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+        <form method="post" action="/scans/start/" data-no-transition>
+          {% csrf_token %}
+          <div class="form-grid">
+            {% for field in form %}
+              <div class="field {% if field.name == 'notes' or field.name == 'description' %}full{% endif %}">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<span class="help-text">{{ field.help_text }}</span>{% endif %}
+                {% if field.errors %}<ul class="errorlist">{{ field.errors }}</ul>{% endif %}
+              </div>
+            {% empty %}
+              <div class="field"><label for="scan-project">Project</label><select class="form-control" id="scan-project" name="project"><option>Select a project</option></select></div>
+              <div class="field"><label for="scan-spec">Specification</label><select class="form-control" id="scan-spec" name="specification"><option>Latest specification</option></select></div>
+              <div class="field full"><label for="scan-mode">Assessment mode</label><select class="form-control" id="scan-mode" name="mode"><option value="passive">Passive Analysis</option><option value="active">Controlled Active Testing</option><option value="zap">OWASP ZAP</option><option value="full">Full Assessment</option></select><span class="help-text">Active modes require documented authorization.</span></div>
+            {% endfor %}
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-gold" type="submit">Launch assessment</button>
+            <a class="btn" href="/scans/">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <div class="stack" data-no-transition>
+      {% include "components/progress_bar.html" with heading='Execution Pipeline' subheading='Preview of the scan lifecycle' scan_status='pending' scan_progress='0' live_scan='false' %}
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Safety Controls</h3><p>Enforced by the scan coordinator</p></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Target scope</dt><dd>Authorized assets only</dd></div>
+            <div><dt>Rate limit</dt><dd>30 requests / minute</dd></div>
+            <div><dt>Active test gate</dt><dd>Policy controlled</dd></div>
+            <div><dt>Evidence handling</dt><dd>Redacted and retained</dd></div>
+          </dl>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

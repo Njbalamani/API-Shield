@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name|default:'Project' }} | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">API Project / {{ project.environment|default:'controlled lab' }}</p>
+      <h1>{{ project.name|default:'Project' }}</h1>
+      <p class="page-subtitle">{{ project.description|default:'Asset inventory, specifications, and assessment history.' }}</p>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-outline-gold" href="/projects/{{ project.id }}/specifications/">Upload spec</a>
+      <a class="btn btn-gold" href="/scans/start/?project={{ project.id|default:'' }}">Start scan</a>
+    </div>
+  </section>
+
+  <div class="grid grid-stats">
+    {% include "components/stat_card.html" with label='Endpoints' value=project.endpoints.count|default:'0' tone='blue' note='Discovered routes' %}
+    {% include "components/stat_card.html" with label='Specifications' value=project.specifications.count|default:'0' tone='gold' note='Imported documents' %}
+    {% include "components/stat_card.html" with label='Scans' value=project.scan_runs.count|default:'0' tone='success' note='Executed assessments' %}
+    {% include "components/stat_card.html" with label='Risk Score' value=project.risk_score|default:'—' tone='danger' note='Aggregate exposure' %}
+  </div>
+
+  <div class="grid grid-page">
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Discovered Endpoints</h3><p>Routes imported from active specifications</p></div><a class="btn-link" href="/endpoints/">View all</a></div>
+        <div class="table-wrap">
+          <table class="data-table" data-searchable-table>
+            <thead><tr><th>Method</th><th>Path</th><th>Risk</th><th>Auth</th><th></th></tr></thead>
+            <tbody>
+              {% for endpoint in project.endpoints.all %}
+                <tr>
+                  <td data-label="Method"><span class="method method-{{ endpoint.method|lower }}">{{ endpoint.method }}</span></td>
+                  <td data-label="Path"><a class="cell-primary text-mono" href="/endpoints/{{ endpoint.id }}/">{{ endpoint.path }}</a><span class="cell-sub">{{ endpoint.summary|default:'No summary' }}</span></td>
+                  <td data-label="Risk" data-severity="{{ endpoint.risk_level }}"><span class="badge badge-{{ endpoint.risk_level }}">{{ endpoint.risk_level }}</span></td>
+                  <td data-label="Auth" data-status="{% if endpoint.auth_required %}active{% else %}pending{% endif %}"><span class="badge badge-{% if endpoint.auth_required %}low{% else %}medium{% endif %}">{% if endpoint.auth_required %}Required{% else %}None{% endif %}</span></td>
+                  <td data-label="Action" class="cell-actions"><a class="btn-link" href="/endpoints/{{ endpoint.id }}/">Inspect</a></td>
+                </tr>
+              {% empty %}
+                <tr data-ignore-filter><td colspan="5">{% include "components/empty_state.html" with title='No endpoints discovered' message='Import an OpenAPI specification to populate the endpoint inventory.' action_url='/projects/' %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Assessment History</h3><p>Recent scan executions</p></div><a class="btn-link" href="/scans/">All scans</a></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Scan</th><th>Mode</th><th>Status</th><th>Findings</th><th>Started</th><th></th></tr></thead>
+            <tbody>
+              {% for scan in project.scan_runs.all %}
+                <tr>
+                  <td data-label="Scan"><a class="cell-primary" href="/scans/{{ scan.id }}/">#{{ scan.id }}</a></td>
+                  <td data-label="Mode">{{ scan.mode }}</td>
+                  <td data-label="Status" data-status="{{ scan.status }}"><span class="badge badge-{{ scan.status }}">{{ scan.status }}</span></td>
+                  <td data-label="Findings" class="text-mono">{{ scan.findings_count }}</td>
+                  <td data-label="Started">{{ scan.started_at }}</td>
+                  <td data-label="Action" class="cell-actions"><a class="btn-link" href="/scans/{{ scan.id }}/">Review</a></td>
+                </tr>
+              {% empty %}
+                <tr data-ignore-filter><td colspan="6">{% include "components/empty_state.html" with title='No assessments recorded' message='Launch a scan to evaluate this project.' action_url='/scans/start/' action_label='Start scan' %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Project Record</h3><p>Registry details</p></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Slug</dt><dd class="text-mono">{{ project.slug|default:'—' }}</dd></div>
+            <div><dt>Environment</dt><dd><span class="badge badge-none">{{ project.environment|default:'—' }}</span></dd></div>
+            <div><dt>Base URL</dt><dd class="text-mono">{{ project.base_url|default:'—' }}</dd></div>
+            <div><dt>Owner</dt><dd>{{ project.owner|default:'Unassigned' }}</dd></div>
+            <div><dt>Status</dt><dd><span class="badge badge-{{ project.status|default:'active' }}">{{ project.status|default:'active' }}</span></dd></div>
+            <div><dt>Authorization</dt><dd>{{ project.authorization_reference|default:'Not provided' }}</dd></div>
+            <div><dt>Created</dt><dd>{{ project.created_at|default:'—' }}</dd></div>
+          </dl>
+          {% if project.authorization_confirmed %}
+            <div class="alert alert-success" style="margin-top:18px"><span class="alert-mark">A</span><span>Authorization confirmed for controlled testing.</span></div>
+          {% else %}
+            <div class="alert alert-warning" style="margin-top:18px"><span class="alert-mark">!</span><span>Authorization not confirmed. Active testing remains disabled.</span></div>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Specification Library</h3><p>Imported API contracts</p></div></div>
+        <div class="panel-body">
+          <ul class="timeline">
+            {% for specification in project.specifications.all %}
+              <li><strong>{{ specification.name }}</strong><span>{{ specification.version|default:'Unversioned' }} / {{ specification.source }}</span><time>{{ specification.imported_at|default:'' }}</time></li>
+            {% empty %}
+              <li><strong>No specifications imported</strong><span>Upload an OpenAPI document to discover endpoints.</span></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

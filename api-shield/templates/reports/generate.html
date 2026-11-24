@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Generate Report | APIShield{% endblock %}
+{% block content %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Evidence &amp; Reporting</p>
+      <h1>Generate Security Report</h1>
+      <p class="page-subtitle">Assemble an executive-ready artifact from validated assessment evidence.</p>
+    </div>
+  </section>
+
+  <div class="grid grid-page">
+    <section class="panel form-card" data-reveal>
+      <div class="panel-head"><div><h3>Report Configuration</h3><p>Scope, format, and delivery parameters</p></div></div>
+      <div class="panel-body">
+        {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+        <form method="post" action="/reports/generate/">
+          {% csrf_token %}
+          <div class="form-grid">
+            {% for field in form %}
+              <div class="field {% if field.name == 'parameters' or field.name == 'notes' %}full{% endif %}">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<span class="help-text">{{ field.help_text }}</span>{% endif %}
+                {% if field.errors %}<ul class="errorlist">{{ field.errors }}</ul>{% endif %}
+              </div>
+            {% empty %}
+              <div class="field"><label for="report-project">Project</label><select class="form-control" id="report-project" name="project"><option>Select project</option></select></div>
+              <div class="field"><label for="report-scan">Scan run</label><select class="form-control" id="report-scan" name="scan_run"><option>Latest completed scan</option></select></div>
+              <div class="field"><label for="report-type">Report type</label><select class="form-control" id="report-type" name="report_type"><option value="full">Full Security Assessment</option><option value="endpoint">API Endpoint Report</option><option value="owasp">OWASP Summary</option><option value="authentication">Authentication Audit</option><option value="behaviour">Behaviour Monitoring</option></select></div>
+              <div class="field"><label for="report-format">File format</label><select class="form-control" id="report-format" name="file_format"><option value="pdf">PDF</option><option value="json">JSON</option></select></div>
+            {% endfor %}
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-gold" type="submit">Generate report</button>
+            <a class="btn" href="/reports/">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Report Contents</h3><p>Standard sections included in every export</p></div></div>
+        <div class="panel-body">
+          <ul class="timeline">
+            <li><strong>Executive summary</strong><span>Posture score, exposure, and key trends.</span></li>
+            <li><strong>Findings register</strong><span>Severity, evidence, and remediation guidance.</span></li>
+            <li><strong>Endpoint inventory</strong><span>Analyzed routes and authentication requirements.</span></li>
+            <li><strong>Compliance mapping</strong><span>OWASP and CWE references where available.</span></li>
+          </ul>
+        </div>
+      </section>
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Availability</h3></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Generation</dt><dd>Asynchronous</dd></div>
+            <div><dt>Formats</dt><dd>PDF, JSON</dd></div>
+            <div><dt>Access</dt><dd>Organization scoped</dd></div>
+            <div><dt>Retention</dt><dd>Per workspace policy</dd></div>
+          </dl>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

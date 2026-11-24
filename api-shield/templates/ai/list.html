@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}AI Analysis | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Intelligence Layer</p>
+      <h1>AI Analysis</h1>
+      <p class="page-subtitle">Contextual explanations and prioritized remediation generated for validated findings.</p>
+    </div>
+  </section>
+
+  <section class="panel" data-reveal>
+    <div class="table-toolbar">
+      <label class="topbar-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+        <input type="search" data-table-search placeholder="Search analyses" aria-label="Search analyses">
+      </label>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" data-searchable-table>
+        <thead><tr><th>Finding</th><th>Model</th><th>Source</th><th>Priority</th><th>Risk</th><th>Generated</th><th></th></tr></thead>
+        <tbody>
+          {% for analysis in analyses %}
+            <tr>
+              <td data-label="Finding"><a class="cell-primary" href="/ai/{{ analysis.id }}/">{{ analysis.finding.title|default:'Finding' }}</a></td>
+              <td data-label="Model" class="text-mono">{{ analysis.model_name|default:'local-risk-model' }}</td>
+              <td data-label="Source"><span class="badge badge-none">{{ analysis.source|default:'local' }}</span></td>
+              <td data-label="Priority" data-status="{{ analysis.priority }}"><span class="badge badge-gold">{{ analysis.priority|default:'medium' }}</span></td>
+              <td data-label="Risk" class="text-mono">{{ analysis.risk_score|floatformat:1 }}</td>
+              <td data-label="Generated">{{ analysis.created_at|default:'—' }}</td>
+              <td data-label="Action" class="cell-actions"><a class="btn-link" href="/ai/{{ analysis.id }}/">Review</a></td>
+            </tr>
+          {% empty %}
+            <tr data-ignore-filter><td colspan="7">{% include "components/empty_state.html" with title='No AI analyses yet' message='Analyses are generated automatically when findings are validated.' %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}AI Analysis #{{ analysis.id|default:'' }} | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Intelligence Layer / {{ analysis.model_name|default:'local-risk-model' }}</p>
+      <h1>Analysis for {{ analysis.finding.title|default:'Finding' }}</h1>
+      <p class="page-subtitle">Machine-generated interpretation with engineering-focused remediation guidance.</p>
+    </div>
+    <div class="page-actions">
+      <span class="badge badge-gold">{{ analysis.priority|default:'medium' }} priority</span>
+      <a class="btn btn-outline-gold" href="/findings/{{ analysis.finding.id }}/">Open finding</a>
+    </div>
+  </section>
+
+  <div class="grid grid-stats">
+    {% include "components/stat_card.html" with label='Risk Score' value=analysis.risk_score|default:'0'|floatformat:1 tone='danger' note='Model assessment' %}
+    {% include "components/stat_card.html" with label='Priority' value=analysis.priority|default:'medium' tone='gold' note='Recommended order' %}
+    {% include "components/stat_card.html" with label='Source' value=analysis.source|default:'local' tone='blue' note='Inference provider' %}
+    {% include "components/stat_card.html" with label='Generated' value=analysis.created_at|default:'—' tone='success' note='Analysis timestamp' %}
+  </div>
+
+  <div class="grid grid-page">
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Explanation</h3><p>Why this issue matters</p></div></div>
+        <div class="panel-body"><p style="margin:0;color:var(--text-soft);font-size:13px">{{ analysis.explanation|default:'No explanation available.' }}</p></div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Remediation Plan</h3><p>Recommended engineering action</p></div></div>
+        <div class="panel-body"><p style="margin:0;color:var(--text-soft);font-size:13px">{{ analysis.remediation|default:'No remediation guidance available.' }}</p></div>
+      </section>
+
+      {% if analysis.code_example %}
+        <section class="panel" data-reveal>
+          <div class="panel-head"><div><h3>Reference Implementation</h3><p>Suggested secure pattern</p></div><span class="code-lang">Code</span></div>
+          <div class="panel-body" style="padding:14px"><pre class="code-block"><code>{{ analysis.code_example }}</code><span class="code-toolbar"><button class="btn btn-sm" type="button" data-copy-code>Copy</button></span></pre></div>
+        </section>
+      {% endif %}
+    </div>
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Analysis Record</h3><p>Provenance and linkage</p></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Identifier</dt><dd class="text-mono">AI-{{ analysis.id|default:'—' }}</dd></div>
+            <div><dt>Finding</dt><dd><a class="btn-link" href="/findings/{{ analysis.finding.id }}/">{{ analysis.finding.title|default:'—' }}</a></dd></div>
+            <div><dt>Model</dt><dd class="text-mono">{{ analysis.model_name|default:'—' }}</dd></div>
+            <div><dt>Source</dt><dd><span class="badge badge-none">{{ analysis.source|default:'local' }}</span></dd></div>
+            <div><dt>Updated</dt><dd>{{ analysis.updated_at|default:'—' }}</dd></div>
+          </dl>
+        </div>
+      </section>
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Governance Note</h3></div></div>
+        <div class="panel-body">
+          <p class="text-muted" style="margin:0;font-size:12px">AI output is advisory. Validate every recommendation against organizational policy and production change controls before deployment.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,13 @@
+<div class="stat-card tone-{{ tone|default:'gold' }}" data-reveal>
+  <div class="stat-top">
+    <span class="stat-label">{{ label|default:'Metric' }}</span>
+    <span class="stat-icon">
+      <svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"></path></svg>
+    </span>
+  </div>
+  <strong class="stat-value">{{ value|default:'0' }}</strong>
+  <span class="stat-meta">
+    {% if delta %}<span class="trend trend-{{ trend|default:'up' }}">{{ delta }}</span>{% endif %}
+    <span>{{ note|default:'Across monitored assets' }}</span>
+  </span>
+</div>

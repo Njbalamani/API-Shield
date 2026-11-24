@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings
+      TESTING: "True"
+      DEBUG: "True"
+      SECRET_KEY: ci-only-secret-key-with-at-least-fifty-characters-for-django
+      DATABASE_URL: postgres://apishield:apishield@localhost:5432/apishield
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Ruff
+        run: ruff check .
+      - name: Django check
+        run: python manage.py check
+      - name: Migration check
+        run: python manage.py makemigrations --check --dry-run
+      - name: Django tests
+        run: python manage.py test -v 2

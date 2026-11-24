@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Reports | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Evidence &amp; Reporting</p>
+      <h1>Report Library</h1>
+      <p class="page-subtitle">Governance-ready exports of assessments, exposure, and remediation status.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-gold" href="/reports/generate/">Generate report</a></div>
+  </section>
+
+  <section class="panel" data-reveal>
+    <div class="table-toolbar">
+      <label class="topbar-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+        <input type="search" data-table-search placeholder="Search reports" aria-label="Search reports">
+      </label>
+      <div class="filter-group" data-filter-group data-filter-key="status">
+        <button class="filter-pill active" type="button" data-table-filter data-filter-value="all">All</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="completed">Completed</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="pending">Pending</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="failed">Failed</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" data-searchable-table>
+        <thead><tr><th>Report</th><th>Project</th><th>Scan</th><th>Format</th><th>Status</th><th>Created by</th><th>Created</th><th></th></tr></thead>
+        <tbody>
+          {% for report in reports %}
+            <tr>
+              <td data-label="Report"><span class="cell-primary">{{ report.get_report_type_display|default:report.report_type }}</span><span class="cell-sub">#{{ report.id }}</span></td>
+              <td data-label="Project">{{ report.project.name|default:'—' }}</td>
+              <td data-label="Scan">#{{ report.scan_run.id|default:'—' }}</td>
+              <td data-label="Format"><span class="badge badge-none">{{ report.file_format|upper }}</span></td>
+              <td data-label="Status" data-status="{{ report.status }}"><span class="badge badge-{{ report.status }}">{{ report.status }}</span></td>
+              <td data-label="Created by">{{ report.created_by|default:'—' }}</td>
+              <td data-label="Created">{{ report.created_at|default:'—' }}</td>
+              <td data-label="Action" class="cell-actions">
+                {% if report.file %}<a class="btn-link" href="{{ report.file.url }}">Download</a>{% else %}<span class="text-muted">—</span>{% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr data-ignore-filter><td colspan="8">{% include "components/empty_state.html" with title='No reports generated' message='Create a report to share security outcomes with stakeholders.' action_url='/reports/generate/' action_label='Generate report' %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Audit #{{ audit.id|default:'' }} | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Identity Assurance / {{ audit.project.name|default:'Project' }}</p>
+      <h1>Authentication Audit #{{ audit.id|default:'—' }}</h1>
+      <p class="page-subtitle">Assessment of identity enforcement for {{ audit.endpoint.path|default:'the selected scope' }}.</p>
+    </div>
+    <div class="page-actions"><span class="badge badge-{{ audit.result|default:'pass' }}">{{ audit.result|default:'pass' }}</span></div>
+  </section>
+
+  <div class="grid grid-stats">
+    {% include "components/stat_card.html" with label='Assurance Score' value=audit.score|default:'0'|floatformat:0 tone='success' note='Weighted controls score' %}
+    {% include "components/stat_card.html" with label='Auth Type' value=audit.auth_type|default:'unknown' tone='blue' note='Detected mechanism' %}
+    {% include "components/stat_card.html" with label='Token Tests' value=audit.token_tests.count|default:'0' tone='gold' note='Executed checks' %}
+    {% include "components/stat_card.html" with label='Auth Controls' value=audit.authorization_controls|yesno:'Present,Missing' tone='danger' note='Object level checks' %}
+  </div>
+
+  <div class="grid grid-page">
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Token Test Results</h3><p>Individual authentication probes</p></div></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Test</th><th>Outcome</th><th>Evidence</th><th>Created</th></tr></thead>
+            <tbody>
+              {% for test in audit.token_tests.all %}
+                <tr>
+                  <td data-label="Test" class="cell-primary">{{ test.name }}</td>
+                  <td data-label="Outcome"><span class="badge badge-{{ test.outcome|lower }}">{{ test.outcome }}</span></td>
+                  <td data-label="Evidence" class="text-mono">{{ test.evidence|default:'—' }}</td>
+                  <td data-label="Created">{{ test.created_at|default:'—' }}</td>
+                </tr>
+              {% empty %}
+                <tr data-ignore-filter><td colspan="4">{% include "components/empty_state.html" with title='No token tests' message='Token checks will be listed after an authentication audit.' %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Audit Findings</h3><p>Detailed observations</p></div><span class="code-lang">JSON</span></div>
+        <div class="panel-body" style="padding:14px"><pre class="code-block"><code>{{ audit.findings|default:'[]' }}</code><span class="code-toolbar"><button class="btn btn-sm" type="button" data-copy-code>Copy</button></span></pre></div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Control Checks</h3><p>Identity hardening checklist</p></div></div>
+        <div class="panel-body">
+          <dl class="kv-list">
+            <div><dt>Expiration detected</dt><dd>{% if audit.expiration_detected %}<span class="badge badge-low">Yes</span>{% else %}<span class="badge badge-high">No</span>{% endif %}</dd></div>
+            <div><dt>Insecure token handling</dt><dd>{% if audit.insecure_token_handling %}<span class="badge badge-high">Detected</span>{% else %}<span class="badge badge-low">None</span>{% endif %}</dd></div>
+            <div><dt>Authorization controls</dt><dd>{% if audit.authorization_controls %}<span class="badge badge-low">Present</span>{% else %}<span class="badge badge-high">Missing</span>{% endif %}</dd></div>
+            <div><dt>Scan run</dt><dd><a class="btn-link" href="/scans/{{ audit.scan_run.id }}/">#{{ audit.scan_run.id|default:'—' }}</a></dd></div>
+            <div><dt>Created</dt><dd>{{ audit.created_at|default:'—' }}</dd></div>
+          </dl>
+        </div>
+      </section>
+      <section class="panel" data-reveal>
+        <div class="panel-head"><div><h3>Recommendation</h3></div></div>
+        <div class="panel-body">
+          <p class="text-muted" style="margin:0;font-size:12px">Enforce short-lived tokens, validate signatures on every request, and apply object-level authorization checks to all protected resources.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

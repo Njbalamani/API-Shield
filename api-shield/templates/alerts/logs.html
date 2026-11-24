@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Request Logs | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Traffic Intelligence</p>
+      <h1>Request Logs</h1>
+      <p class="page-subtitle">Observed API traffic with suspicion signals and performance indicators.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-outline-gold" href="/monitor/alerts/">View alerts</a></div>
+  </section>
+
+  {% firstof request_logs logs '' as traffic_logs %}
+  <section class="panel" data-reveal>
+    <div class="table-toolbar">
+      <label class="topbar-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+        <input type="search" data-table-search placeholder="Search paths, clients, or IPs" aria-label="Search request logs">
+      </label>
+      <div class="filter-group" data-filter-group data-filter-key="status">
+        <button class="filter-pill active" type="button" data-table-filter data-filter-value="all">All traffic</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="suspicious">Suspicious</button>
+        <button class="filter-pill" type="button" data-table-filter data-filter-value="normal">Normal</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" data-searchable-table>
+        <thead><tr><th>Time</th><th>Method</th><th>Path</th><th>Status</th><th>Client IP</th><th>Response</th><th>Signal</th></tr></thead>
+        <tbody>
+          {% for log in traffic_logs %}
+            <tr>
+              <td data-label="Time">{{ log.timestamp|default:'—' }}</td>
+              <td data-label="Method"><span class="method method-{{ log.method|lower }}">{{ log.method }}</span></td>
+              <td data-label="Path" class="text-mono">{{ log.path }}</td>
+              <td data-label="Status"><span class="badge badge-{% if log.status_code >= 400 %}high{% else %}low{% endif %}">{{ log.status_code|default:'—' }}</span></td>
+              <td data-label="Client IP" class="text-mono">{{ log.ip_address|default:'—' }}</td>
+              <td data-label="Response" class="text-mono">{{ log.response_time_ms }} ms</td>
+              <td data-label="Signal" data-status="{% if log.is_suspicious %}suspicious{% else %}normal{% endif %}"><span class="badge badge-{% if log.is_suspicious %}high{% else %}none{% endif %}">{% if log.is_suspicious %}Suspicious{% else %}Normal{% endif %}</span></td>
+            </tr>
+          {% empty %}
+            <tr data-ignore-filter><td colspan="7">{% include "components/empty_state.html" with title='No traffic recorded' message='Request telemetry will appear here as monitored APIs receive traffic.' %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="panel-foot">Passive telemetry collection / no active probing from this view</div>
+  </section>
+{% endblock %}

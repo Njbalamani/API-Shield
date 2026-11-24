@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Organizations | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Governance</p>
+      <h1>Organizations</h1>
+      <p class="page-subtitle">Manage tenancy boundaries, membership, and security ownership across your enterprise.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-gold" href="/organizations/create/">New organization</a></div>
+  </section>
+
+  {% firstof organizations apishield_organizations '' as organization_list %}
+  <div class="grid grid-3" data-reveal>
+    {% for organization in organization_list %}
+      <article class="panel panel-accent">
+        <div class="panel-body">
+          <div class="stat-top">
+            <span class="badge badge-{% if organization.is_active %}low{% else %}none{% endif %}">{% if organization.is_active %}Active{% else %}Inactive{% endif %}</span>
+            <span class="stat-icon"><svg viewBox="0 0 24 24"><path d="M3 21h18M6 21V7l6-4 6 4v14M10 11h4M10 15h4"></path></svg></span>
+          </div>
+          <h3 style="margin:18px 0 6px">{{ organization.name|default:'Organization' }}</h3>
+          <p class="text-muted" style="font-size:11px">{{ organization.description|default:'No description provided.' }}</p>
+          <dl class="kv-list" style="margin-top:16px">
+            <div><dt>Slug</dt><dd class="text-mono">{{ organization.slug|default:'—' }}</dd></div>
+            <div><dt>Created</dt><dd>{{ organization.created_at|default:'—' }}</dd></div>
+          </dl>
+        </div>
+        <div class="panel-foot"><a class="btn-link" href="/organizations/{{ organization.id }}/">Open workspace</a></div>
+      </article>
+    {% empty %}
+      <div class="panel" style="grid-column:1/-1">{% include "components/empty_state.html" with title='No organizations available' message='Create a workspace to begin onboarding projects and security teams.' action_url='/organizations/create/' action_label='Create organization' %}</div>
+    {% endfor %}
+  </div>
+{% endblock %}

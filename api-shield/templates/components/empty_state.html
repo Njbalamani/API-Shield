@@ -1,0 +1,8 @@
+<div class="empty-state">
+  <div class="empty-mark">S</div>
+  <h3>{{ title|default:'Nothing to display yet' }}</h3>
+  <p>{{ message|default:'Results will appear here once data is available.' }}</p>
+  {% if action_url %}
+    <a class="btn btn-outline-gold btn-sm" href="{{ action_url }}">{{ action_label|default:'Continue' }}</a>
+  {% endif %}
+</div>

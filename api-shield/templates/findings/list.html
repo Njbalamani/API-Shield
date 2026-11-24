@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Findings | APIShield{% endblock %}
+{% block content %}
+  {% include "components/demo_banner.html" %}
+  <section class="page-head">
+    <div>
+      <p class="eyebrow">Vulnerability Intelligence</p>
+      <h1>Security Findings</h1>
+      <p class="page-subtitle">Validated issues ranked by severity, confidence, and business exposure.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-gold" href="/scans/start/">Run new assessment</a></div>
+  </section>
+
+  <div class="grid grid-stats">
+    {% include "components/stat_card.html" with label='Critical' value=critical_count|default:'4' tone='danger' note='Immediate remediation' %}
+    {% include "components/stat_card.html" with label='High' value=high_count|default:'9' tone='gold' note='Priority queue' %}
+    {% include "components/stat_card.html" with label='In Progress' value=in_progress_count|default:'6' tone='blue' note='Under remediation' %}
+    {% include "components/stat_card.html" with label='Resolved' value=resolved_count|default:'18' tone='success' note='Verified fixes' %}
+  </div>
+
+  {% include "components/finding_table.html" with findings=findings heading='Finding Register' subheading='Filter by severity or search across titles and endpoints' %}
+{% endblock %}

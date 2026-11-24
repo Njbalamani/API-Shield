@@ -1,0 +1,25 @@
+<section class="panel" aria-labelledby="scanner-title" data-scan-progress data-scan-status="{{ scan_status|default:'running' }}" data-scan-progress="{{ scan_progress|default:0 }}" data-live-scan="{{ live_scan|default:'true' }}">
+  <div class="panel-head">
+    <div>
+      <h3 id="scanner-title">{{ heading|default:'Scan Execution' }}</h3>
+      <p>{{ subheading|default:'Live assessment pipeline and evidence collection' }}</p>
+    </div>
+    <span class="badge badge-gold" data-scan-status-text>Running</span>
+  </div>
+  <div class="progress-shell">
+    <div class="progress-meta">
+      <div>
+        <span class="progress-label">Completion</span>
+        <div class="progress-ticks"><span>Queued</span><span>Analyzing</span><span>Finalizing</span></div>
+      </div>
+      <strong class="progress-value" data-progress-value>0%</strong>
+    </div>
+    <div class="progress-track"><div class="progress-fill" data-progress-fill></div></div>
+    <div class="scanner-stage" data-scan-stages></div>
+    <dl class="kv-list">
+      <div><dt>Elapsed</dt><dd class="text-mono" data-scan-elapsed>00:00</dd></div>
+      <div><dt>Engine</dt><dd>{{ scan_engine|default:'APIShield Adaptive Engine' }}</dd></div>
+      <div><dt>Scope</dt><dd>{{ scan_scope|default:'Authorized assets only' }}</dd></div>
+    </dl>
+  </div>
+</section>
